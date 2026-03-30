@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "openconclave": {
-      "command": "bun",
-      "args": ["run", "${HOME}/.openconclave-app/packages/server/src/mcp/server.ts"],
-      "cwd": "${HOME}/.openconclave-app"
+      "command": "bash",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/start-mcp.sh"]
     }
   }
 }
