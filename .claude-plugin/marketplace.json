@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "openconclave",
+  "description": "OpenConclave — AI agent orchestration with visual workflow automation",
+  "owner": {
+    "name": "OpenConclave",
+    "email": "hello@openconclave.com"
+  },
+  "plugins": [
+    {
+      "name": "openconclave",
+      "description": "AI agent orchestration with visual workflows. Claude Code + Ollama engines, channel-in-the-loop, workflows-as-MCP-tools, cron scheduling, Telegram integration.",
+      "category": "development",
+      "source": {
+        "source": "git-subdir",
+        "url": "openconclave/openconclave",
+        "path": "plugin",
+        "ref": "master"
+      },
+      "homepage": "https://openconclave.com"
+    }
+  ]
+}
