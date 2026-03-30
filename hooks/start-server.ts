@@ -12,9 +12,13 @@ const port = process.env.OPENCONCLAVE_PORT ?? "4000";
 const clientPort = "5173";
 
 function openBrowser() {
-  const openCmd = process.platform === "win32" ? "cmd" : process.platform === "darwin" ? "open" : "xdg-open";
-  const openArgs = process.platform === "win32" ? ["/c", "start", `http://localhost:${clientPort}`] : [`http://localhost:${clientPort}`];
-  spawn({ cmd: [openCmd, ...openArgs], stdout: "ignore", stderr: "ignore" });
+  const url = `http://localhost:${clientPort}`;
+  const cmd = process.platform === "win32"
+    ? ["powershell.exe", "-Command", `Start-Process '${url}'`]
+    : process.platform === "darwin"
+    ? ["open", url]
+    : ["xdg-open", url];
+  spawn({ cmd, stdout: "ignore", stderr: "ignore" });
 }
 
 // Check if server is already running
