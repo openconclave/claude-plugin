@@ -16,18 +16,14 @@ try {
   const res = await fetch(`http://localhost:${port}/api/health`);
   if (res.ok) {
     // Already running, just output success
-    console.log(JSON.stringify({
-      hookSpecificOutput: { message: `OpenConclave running on port ${port}` }
-    }));
+    console.log(`OpenConclave running on port ${port}`);
     process.exit(0);
   }
 } catch {}
 
 // Check if OpenConclave is installed
 if (!existsSync(resolve(ocDir, "packages/server/src/index.ts"))) {
-  console.log(JSON.stringify({
-    hookSpecificOutput: { message: "OpenConclave not installed. Run: curl -fsSL https://openconclave.com/install.sh | bash" }
-  }));
+  console.log("OpenConclave not installed. Run: curl -fsSL https://openconclave.com/install.sh | bash");
   process.exit(0);
 }
 
@@ -52,15 +48,11 @@ for (let i = 0; i < 30; i++) {
       const openArgs = process.platform === "win32" ? ["/c", "start", `http://localhost:${clientPort}`] : [`http://localhost:${clientPort}`];
       spawn({ cmd: [openCmd, ...openArgs], stdout: "ignore", stderr: "ignore" });
 
-      console.log(JSON.stringify({
-        hookSpecificOutput: { message: `OpenConclave started. UI: http://localhost:${clientPort}` }
-      }));
+      console.log(`OpenConclave started. UI: http://localhost:${clientPort}`);
       process.exit(0);
     }
   } catch {}
   await Bun.sleep(500);
 }
 
-console.log(JSON.stringify({
-  hookSpecificOutput: { message: "OpenConclave server failed to start" }
-}));
+console.log("OpenConclave server failed to start");
