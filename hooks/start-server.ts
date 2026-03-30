@@ -25,9 +25,38 @@ if (!existsSync(resolve(ocDir, "packages/server/src/index.ts"))) {
   process.exit(0);
 }
 
-// Start server in background (detached so it survives hook exit)
-// Pass Claude Code's PID so the server can self-terminate when it exits
-const claudePid = process.ppid ?? process.env.PPID;
+// Walk up the process tree to find claude.exe / claude (the long-lived process).
+// Hook runs as: claude.exe → bash → bash → ... → bun (this process)
+// All intermediate shells die after the hook, so we need the actual Claude Code PID.
+function findClaudePid(): number | undefined {
+  try {
+    let pid = process.pid;
+    for (let i = 0; i < 10; i++) {
+      let parentPid: number;
+      let parentName: string;
+      if (process.platform === "win32") {
+        const r = Bun.spawnSync({
+          cmd: ["powershell", "-NoProfile", "-Command",
+            `$p = Get-CimInstance Win32_Process -Filter "ProcessId=${pid}"; "$($p.ParentProcessId)|$($p.Name)"`],
+        });
+        const [ppidStr, name] = r.stdout.toString().trim().split("|");
+        parentPid = parseInt(ppidStr, 10);
+        parentName = (name ?? "").toLowerCase();
+      } else {
+        const r = Bun.spawnSync({ cmd: ["ps", "-o", "ppid=,comm=", "-p", String(pid)] });
+        const parts = r.stdout.toString().trim().split(/\s+/);
+        parentPid = parseInt(parts[0], 10);
+        parentName = (parts[1] ?? "").toLowerCase();
+      }
+      if (isNaN(parentPid) || parentPid <= 1) break;
+      if (parentName.includes("claude")) return parentPid;
+      pid = parentPid;
+    }
+  } catch {}
+  return undefined;
+}
+
+const claudePid = findClaudePid();
 const server = spawn({
   cmd: ["bun", "start"],
   cwd: ocDir,
