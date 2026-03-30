@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start:mcp": "bun run mcp-proxy.ts"
+    "start:mcp": "bun run mcp-proxy.ts",
+    "start:channel": "bun install --no-summary 1>&2 && bun channel-server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
   }
 }
