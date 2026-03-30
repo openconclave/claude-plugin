@@ -31,14 +31,16 @@ if (!existsSync(resolve(ocDir, "packages/server/src/index.ts"))) {
   process.exit(0);
 }
 
-// Start server in background
-spawn({
+// Start server in background (detached so it survives hook exit)
+const server = spawn({
   cmd: ["bun", "start"],
   cwd: ocDir,
   stdout: "ignore",
   stderr: "ignore",
   stdin: "ignore",
+  detached: true,
 });
+server.unref();
 
 // Wait for server to be ready
 for (let i = 0; i < 30; i++) {
