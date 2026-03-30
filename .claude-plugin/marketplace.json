@@ -13,7 +13,7 @@
       "category": "development",
       "source": {
         "source": "git-subdir",
-        "url": "openconclave/openconclave",
+        "url": "https://github.com/openconclave/openconclave.git",
         "path": "plugin",
         "ref": "master"
       },
