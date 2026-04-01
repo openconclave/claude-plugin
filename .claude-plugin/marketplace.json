@@ -7,8 +7,13 @@
   "plugins": [
     {
       "name": "openconclave",
-      "source": "./",
-      "description": "AI agent orchestration with visual workflows. Claude Code + Ollama engines, channel-in-the-loop, workflows-as-MCP-tools."
+      "source": "./openconclave/",
+      "description": "AI agent orchestration with visual workflows. Claude Code + Ollama engines, workflows-as-MCP-tools."
+    },
+    {
+      "name": "openconclave-channel",
+      "source": "./openconclave-channel/",
+      "description": "OpenConclave channel — delivers workflow events and prompt questions to Claude Code sessions."
     }
   ]
 }
