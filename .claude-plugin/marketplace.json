@@ -14,6 +14,11 @@
       "name": "openconclave-channel",
       "source": "./openconclave-channel/",
       "description": "OpenConclave channel — delivers workflow events and prompt questions to Claude Code sessions."
+    },
+    {
+      "name": "openconclave-run",
+      "source": "./openconclave-run/",
+      "description": "Run OpenConclave workflows — each enabled workflow appears as a callable tool."
     }
   ]
 }
