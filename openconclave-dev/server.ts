@@ -17,7 +17,7 @@ async function ocApi(path: string, method = "GET", body?: unknown): Promise<unkn
   return res.json();
 }
 
-const NODE_TYPES = ["trigger", "agent", "condition", "transform", "merge", "prompt", "output", "file"] as const;
+const NODE_TYPES = ["trigger", "agent", "condition", "code", "merge", "prompt", "output", "file", "discussion"] as const;
 
 const server = new McpServer({
   name: "openconclave-dev",
@@ -110,7 +110,7 @@ server.tool(
     workflowId: z.string().describe("The workflow ID"),
     type: z.enum(NODE_TYPES).describe("Node type"),
     label: z.string().describe("Node label"),
-    config: z.record(z.unknown()).optional().describe("Node config (e.g. {runtime:'python',code:'...'} for transform, {model:'sonnet'} for agent)"),
+    config: z.record(z.unknown()).optional().describe("Node config (e.g. {runtime:'python',code:'...'} for code, {model:'sonnet'} for agent)"),
     position: z.object({ x: z.number(), y: z.number() }).optional().describe("Canvas position (default: {x:0,y:0})"),
     connectFrom: z.string().optional().describe("Source node ID to add an edge FROM -> this new node"),
     connectTo: z.string().optional().describe("Target node ID to add an edge this new node -> TO"),
