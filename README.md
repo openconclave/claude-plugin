@@ -1,6 +1,6 @@
 # OpenConclave Plugin Marketplace
 
-Claude Code plugin marketplace for [OpenConclave](https://openconclave.com) — AI agent orchestration with visual workflow automation.
+Claude Code plugin marketplace for [OpenConclave](https://openconclave.com) — AI agent orchestration with visual conclave automation.
 
 ## Add this marketplace
 
@@ -16,14 +16,13 @@ Claude Code plugin marketplace for [OpenConclave](https://openconclave.com) — 
 
 ## What you get
 
-- Visual workflow editor at http://localhost:5173
-- MCP tools for managing workflows from Claude Code
-- Channel events for workflow output and prompt questions
+- Visual conclave editor at http://localhost:5173
+- MCP tools for managing conclaves from Claude Code
+- Channel events for conclave output and prompt questions
 - Auto-start server on Claude Code session start
-- `/create-workflow` skill for natural language workflow creation
+- `/create-conclave` skill for natural language conclave creation
 
 ## Links
 
 - [OpenConclave](https://openconclave.com)
 - [GitHub](https://github.com/openconclave/openconclave)
-- [Documentation](https://github.com/openconclave/openconclave/blob/master/WHAT_IS_OPENCONCLAVE.md)

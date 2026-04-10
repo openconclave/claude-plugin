@@ -21,16 +21,16 @@ const server = new Server(
       'Events from OpenConclave arrive as <channel source="openconclave" event_type="..." ...>.',
       "",
       "Event types:",
-      "- channel:output — a workflow produced output for you. Read and present to user.",
-      "- prompt:question — a workflow is asking YOU a question and waiting for your response.",
+      "- channel:output — a conclave produced output for you. Read and present to user.",
+      "- prompt:question — a conclave is asking YOU a question and waiting for your response.",
       "",
       "Core tools:",
-      "- oc_list_workflows, oc_trigger_workflow, oc_get_run, oc_list_runs",
+      "- oc_list_conclaves, oc_trigger_conclave, oc_get_run, oc_list_runs",
       "- oc_respond: respond to a pending prompt (REQUIRED when prompt:question events arrive)",
       "- oc_pending_prompts: list prompts waiting for response",
       "",
-      "Workflow tools: Each enabled workflow with a toolName appears as its own tool.",
-      "Call it directly to trigger the workflow — no need to use oc_trigger_workflow.",
+      "Conclave tools: Each enabled conclave with a toolName appears as its own tool.",
+      "Call it directly to trigger the conclave — no need to use oc_trigger_conclave.",
       "",
       "IMPORTANT: When you receive a prompt:question event, respond immediately using oc_respond.",
     ].join("\n"),
@@ -58,29 +58,29 @@ function defineTool(name, description, schema, handler) {
 
 // ── Core tools ──────────────────────────────────────────────
 
-defineTool("oc_list_workflows", "List all workflows in OpenConclave", {
+defineTool("oc_list_conclaves", "List all conclaves in OpenConclave", {
   type: "object", properties: {},
 }, async () => {
-  const data = await ocApi("/workflows");
-  const summary = data.workflows.map((w) => ({ id: w.id, name: w.name, enabled: w.enabled }));
+  const data = await ocApi("/conclaves");
+  const summary = data.conclaves.map((w) => ({ id: w.id, name: w.name, enabled: w.enabled }));
   return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
 });
 
-defineTool("oc_trigger_workflow", "Trigger a workflow run. Always pass your current working directory as cwd so agents run in the correct project.", {
+defineTool("oc_trigger_conclave", "Trigger a conclave run. Always pass your current working directory as cwd so agents run in the correct project.", {
   type: "object",
   properties: {
-    workflow_id: { type: "string", description: "The workflow ID to trigger" },
+    conclave_id: { type: "string", description: "The conclave ID to trigger" },
     payload: { type: "object", description: "Optional payload data" },
     cwd: { type: "string", description: "Your current working directory — agents will run here" },
   },
-  required: ["workflow_id", "cwd"],
-}, async ({ workflow_id, payload, cwd }) => {
+  required: ["conclave_id", "cwd"],
+}, async ({ conclave_id, payload, cwd }) => {
   const enrichedPayload = { ...(payload ?? {}), ...(cwd ? { _callerCwd: cwd } : {}) };
-  const data = await ocApi(`/workflows/${workflow_id}/run`, "POST", { payload: enrichedPayload });
+  const data = await ocApi(`/conclaves/${conclave_id}/run`, "POST", { payload: enrichedPayload });
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 });
 
-defineTool("oc_get_run", "Get details of a specific workflow run including tasks and events", {
+defineTool("oc_get_run", "Get details of a specific conclave run including tasks and events", {
   type: "object",
   properties: { run_id: { type: "string", description: "The run ID" } },
   required: ["run_id"],
@@ -95,16 +95,16 @@ defineTool("oc_get_run", "Get details of a specific workflow run including tasks
   return { content: [{ type: "text", text: JSON.stringify({ run: data.run, tasks }, null, 2) }] };
 });
 
-defineTool("oc_list_runs", "List recent workflow runs", {
+defineTool("oc_list_runs", "List recent conclave runs", {
   type: "object",
   properties: { limit: { type: "number", description: "Max results (default 10)" } },
 }, async ({ limit }) => {
   const data = await ocApi(`/runs?limit=${limit ?? 10}`);
-  const summary = data.runs.map((r) => ({ id: r.id, status: r.status, workflowId: r.workflowId, createdAt: r.createdAt }));
+  const summary = data.runs.map((r) => ({ id: r.id, status: r.status, conclaveId: r.conclaveId, createdAt: r.createdAt }));
   return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
 });
 
-defineTool("oc_respond", "Respond to a pending prompt question from a workflow. Use this to send your response so the workflow can continue.", {
+defineTool("oc_respond", "Respond to a pending prompt question from a conclave. Use this to send your response so the conclave can continue.", {
   type: "object",
   properties: {
     run_id: { type: "string", description: "The run ID" },
@@ -124,46 +124,46 @@ defineTool("oc_pending_prompts", "List all pending prompt questions waiting for 
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 });
 
-// ── Dynamic workflow tools ──────────────────────────────────
+// ── Dynamic conclave tools ──────────────────────────────────
 
-const registeredWorkflowTools = new Set();
+const registeredConclaveTools = new Set();
 
-async function syncWorkflowTools() {
+async function syncConclaveTools() {
   try {
-    const data = await ocApi("/workflows");
+    const data = await ocApi("/conclaves");
     const seen = new Set();
-    const oldRegistered = new Set(registeredWorkflowTools);
+    const oldRegistered = new Set(registeredConclaveTools);
 
-    for (const wf of data.workflows) {
+    for (const wf of data.conclaves) {
       if (!wf.enabled) continue;
       const def = wf.definition ?? {};
       const toolName = def.toolName ?? wf.toolName;
       if (!toolName) continue;
 
       seen.add(toolName);
-      if (!registeredWorkflowTools.has(toolName)) {
-        const description = def.description ?? wf.description ?? `Run workflow: ${wf.name}`;
-        const workflowId = String(wf.id);
+      if (!registeredConclaveTools.has(toolName)) {
+        const description = def.description ?? wf.description ?? `Run conclave: ${wf.name}`;
+        const conclaveId = String(wf.id);
 
         defineTool(toolName, `${description}. Always pass your current working directory as cwd so agents run in the correct project.`, {
           type: "object",
           properties: {
-            input: { type: "string", description: "Input data to pass to the workflow trigger" },
+            input: { type: "string", description: "Input data to pass to the conclave trigger" },
             cwd: { type: "string", description: "Your current working directory — agents will run here" },
           },
           required: ["cwd"],
         }, async ({ input, cwd }) => {
           const payload = { ...(input ? { input } : {}), ...(cwd ? { _callerCwd: cwd } : {}) };
-          const result = await ocApi(`/workflows/${workflowId}/run`, "POST", { payload });
+          const result = await ocApi(`/conclaves/${conclaveId}/run`, "POST", { payload });
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         });
-        registeredWorkflowTools.add(toolName);
+        registeredConclaveTools.add(toolName);
       }
     }
 
-    for (const t of registeredWorkflowTools) {
+    for (const t of registeredConclaveTools) {
       if (!seen.has(t)) {
-        registeredWorkflowTools.delete(t);
+        registeredConclaveTools.delete(t);
         tools.delete(t);
       }
     }
@@ -176,7 +176,7 @@ async function syncWorkflowTools() {
       } catch {}
     }
   } catch (err) {
-    console.error("[channel] syncWorkflowTools error:", err);
+    console.error("[channel] syncConclaveTools error:", err);
   }
 }
 
@@ -203,8 +203,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 // ── Sync & Connect ──────────────────────────────────────────
 
-await syncWorkflowTools();
-console.error(`[channel] synced ${registeredWorkflowTools.size} workflow tools`);
+await syncConclaveTools();
+console.error(`[channel] synced ${registeredConclaveTools.size} conclave tools`);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
@@ -248,7 +248,7 @@ function connectWS() {
             event_type: eventType,
             run_id: String(data.runId ?? ""),
           };
-          if (data.data?.workflowName) meta.workflow_name = data.data.workflowName;
+          if (data.data?.conclaveName) meta.conclave_name = data.data.conclaveName;
           if (data.data?.nodeLabel) meta.node_label = data.data.nodeLabel;
           if (data.data?.senderNode) meta.sender_node = data.data.senderNode;
 
@@ -262,9 +262,9 @@ function connectWS() {
           });
         }
 
-        // Resync tools when workflows change
-        if (eventType === "workflow:updated" || eventType === "workflow:created" || eventType === "workflow:deleted") {
-          await syncWorkflowTools();
+        // Resync tools when conclaves change
+        if (eventType === "conclave:updated" || eventType === "conclave:created" || eventType === "conclave:deleted") {
+          await syncConclaveTools();
         }
       } catch (err) {
         console.error("[channel] WS message handler error:", err);
