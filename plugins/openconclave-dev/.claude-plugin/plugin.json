@@ -1,7 +1,7 @@
 {
   "name": "openconclave-dev",
   "description": "OpenConclave conclave development — create, edit, and manage conclaves, nodes, and connections.",
-  "version": "1.0.0",
+  "version": "1.0.10",
   "author": {
     "name": "OpenConclave"
   }

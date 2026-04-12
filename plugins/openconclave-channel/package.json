@@ -1,9 +1,9 @@
 {
   "name": "openconclave-channel",
-  "version": "1.0.0",
+  "version": "1.0.10",
   "type": "module",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "bun server.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"

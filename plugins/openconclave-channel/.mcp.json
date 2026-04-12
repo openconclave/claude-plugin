@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "openconclave-channel": {
-      "command": "node",
+      "command": "bun",
       "args": ["${CLAUDE_PLUGIN_ROOT}/channel.mjs"]
     }
   }
